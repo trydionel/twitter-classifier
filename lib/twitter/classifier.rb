@@ -1,4 +1,8 @@
 require 'twitter'
+require 'redis'
+require 'json'
+require 'term/ansicolor'
+include Term::ANSIColor
 
 class Array
   def split(n)
@@ -14,7 +18,7 @@ module Twitter
 
       classifier.build!
       classifier.train!
-      classifier.verify! if options[:verify]
+      classifier.verify! unless options[:verify] == false
       classifier.predict!
       classifier.console! if options[:console]
     end
@@ -23,6 +27,8 @@ module Twitter
     attr_accessor :options
     attr_accessor :tweets
 
+    attr_accessor :redis
+
     attr_accessor :training
     attr_accessor :testing
 
@@ -30,6 +36,7 @@ module Twitter
       @strategy = strategy
       @options  = default_options.merge(options)
       @tweets   = []
+      @redis    = Redis.new(options.delete(:redis) || {})
 
       collect!
     end
@@ -39,24 +46,41 @@ module Twitter
         :user      => 'trydionel',
         :count     => 200,
         :test_size => 10,
-        :verify    => true,
-        :verbose   => true,
-        :console   => false
+        :verbose   => true
       }
     end
 
     def collect!
       puts "Collecting tweets..." if verbose?
+
+      # Attempt to load from redis first...
+      #
+      key = "#{options[:user]}-#{options[:count]}"
+      if redis.exists(key)
+        puts "\tfrom redis..." if verbose?
+        @tweets = JSON.parse(redis.get(key)) 
+      end
+
+      # Then fall back to Twitter API.
+      #
+      errors = 0
       while tweets.size < options[:count]
         begin
           tweet_options = { :count => 200 }
           tweet_options[:max_id] = tweets.last.id unless tweets.empty?
 
           tweets.concat Twitter.user_timeline(options[:user], tweet_options)
-        rescue
-          # no op
+        rescue Exception => e
+          puts "Error loading tweets:\t#{e}"
+          errors += 1
+          break if errors == 3
         end
       end
+      raise "Unable to load tweets" if tweets.empty?
+
+      # Serialize to redis for convenient access later
+      #
+      redis.set(key, tweets.to_json)
     end
 
     def build!
@@ -90,9 +114,9 @@ module Twitter
         expected = strategy.categorize(tweet)
         actual   = strategy.classify(tweet)
         if expected == actual
-          puts "'#{tweet.text.white.bold}' was correctly classified as #{strategy.to_text(actual).green}"
+          puts "'#{tweet['text'].white.bold}' was correctly classified as #{strategy.to_text(actual).green}"
         else
-          puts "'#{tweet.text.white.bold}' was incorrectly classified as #{strategy.to_text(actual).red}"
+          puts "'#{tweet['text'].white.bold}' was incorrectly classified as #{strategy.to_text(actual).red}"
         end
       end
     end
