@@ -3,7 +3,7 @@ module Processors
     extend self
 
     def process(text)
-      text
+      text.split
     end
 
   end
