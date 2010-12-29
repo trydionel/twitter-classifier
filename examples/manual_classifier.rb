@@ -2,7 +2,7 @@
 
 require 'rubygems'
 
-$:.unshift('lib')
+$:.unshift('../lib')
 require 'processors/noop'
 require 'categorizers/manual'
 require 'strategies/bayes'
