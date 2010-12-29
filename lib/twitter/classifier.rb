@@ -66,7 +66,7 @@ module Twitter
       errors = 0
       while tweets.size < options[:count]
         begin
-          tweet_options = { :count => 200 }
+          tweet_options = { :count => [options[:count], 200].min }
           tweet_options[:max_id] = tweets.last.id unless tweets.empty?
 
           tweets.concat Twitter.user_timeline(options[:user], tweet_options)
