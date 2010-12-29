@@ -1,0 +1,8 @@
+gem 'classifier'
+gem 'libsvm-ruby-swig'
+gem 'term-ansicolor'
+gem 'redis'
+gem 'stemmer'
+gem 'twitter'
+gem 'twitter-stream'
+gem 'json'
