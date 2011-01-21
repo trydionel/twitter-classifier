@@ -14,10 +14,10 @@ Built on Ruby 1.9.2 (not sure if it works on 1.8).
 * Twitter "firehose" plumbing
 
 ## Resources
-* http://www.igvita.com/2007/05/23/bayes-classification-in-ruby/
-* https://github.com/hmason/tc
-* http://web.media.mit.edu/~dustin/rubyai.html
-* http://www.csie.ntu.edu.tw/~cjlin/libsvm/
+* [@igvita on using Bayes Classifiers in Ruby](http://www.igvita.com/2007/05/23/bayes-classification-in-ruby/)
+* [@hmason's library for classifying Twitter data](https://github.com/hmason/tc)
+* [Reference page for Ruby AI libraries](http://web.media.mit.edu/~dustin/rubyai.html)
+* [Official page for SVM library](http://www.csie.ntu.edu.tw/~cjlin/libsvm/)
 
 ## Todo
 * Add more examples
